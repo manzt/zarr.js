@@ -1,9 +1,5 @@
 {
   "rules": {
-    "semicolon": [
-      true,
-      "always"
-    ],
     "prettier": true
   },
   "extends": [
