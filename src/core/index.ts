@@ -1,21 +1,20 @@
 import { Store, ValidStoreType, AsyncStore, SyncStore } from "../storage/types";
 
-import { pathToPrefix } from '../storage/index';
-import { normalizeStoragePath, isTotalSlice, arrayEquals1D } from '../util';
-import { ZarrArrayMetadata, UserAttributes, FillType } from '../types';
-import { ARRAY_META_KEY, ATTRS_META_KEY } from '../names';
+import { pathToPrefix } from "../storage/index";
+import { normalizeStoragePath, isTotalSlice, arrayEquals1D } from "../util";
+import { ZarrArrayMetadata, UserAttributes, FillType } from "../types";
+import { ARRAY_META_KEY, ATTRS_META_KEY } from "../names";
 import { Attributes } from "../attributes";
 import { parseMetadata } from "../metadata";
 import { ArraySelection, DimensionSelection, Indexer, Slice } from "./types";
-import { BasicIndexer, isContiguousSelection } from './indexing';
+import { BasicIndexer, isContiguousSelection } from "./indexing";
 import { NestedArray } from "../nestedArray";
-import { TypedArray, DTYPE_TYPEDARRAY_MAPPING } from '../nestedArray/types';
-import { ValueError, PermissionError, KeyError } from '../errors';
+import { TypedArray, DTYPE_TYPEDARRAY_MAPPING } from "../nestedArray/types";
+import { ValueError, PermissionError, KeyError } from "../errors";
 import { Codec } from "../compression/types";
 import { getCodec } from "../compression/creation";
 
 export class ZarrArray {
-
   public store: Store;
   private compressor: Codec | null;
 
@@ -95,7 +94,6 @@ export class ZarrArray {
    *  A value used for uninitialized portions of the array.
    */
   public get fillValue(): FillType {
-
     const fillTypeValue = this.meta.fill_value;
 
     // TODO extract into function
@@ -128,7 +126,6 @@ export class ZarrArray {
   public get length() {
     return this.shape[0];
   }
-
 
   private get _chunkDataShape() {
     if (this.shape === []) {
@@ -169,9 +166,24 @@ export class ZarrArray {
    * @param cacheAttrs If true (default), user attributes will be cached for attribute read operations.
    * If false, user attributes are reloaded from the store prior to all attribute read operations.
    */
-  public static async create(store: Store, path: null | string = null, readOnly: boolean = false, chunkStore: Store | null = null, cacheMetadata = true, cacheAttrs = true) {
+  public static async create(
+    store: Store,
+    path: null | string = null,
+    readOnly: boolean = false,
+    chunkStore: Store | null = null,
+    cacheMetadata = true,
+    cacheAttrs = true
+  ) {
     const metadata = await this.loadMetadataForConstructor(store, path);
-    return new ZarrArray(store, path, metadata as ZarrArrayMetadata, readOnly, chunkStore, cacheMetadata, cacheAttrs);
+    return new ZarrArray(
+      store,
+      path,
+      metadata as ZarrArrayMetadata,
+      readOnly,
+      chunkStore,
+      cacheMetadata,
+      cacheAttrs
+    );
   }
 
   private static async loadMetadataForConstructor(store: Store, path: null | string) {
@@ -180,8 +192,7 @@ export class ZarrArray {
       const keyPrefix = pathToPrefix(path);
       const metaStoreValue = await store.getItem(keyPrefix + ARRAY_META_KEY);
       return parseMetadata(metaStoreValue);
-    }
-    catch (error) {
+    } catch (error) {
       throw new Error("Failed to load metadata for ZarrArray:" + error.toString());
     }
   }
@@ -198,7 +209,15 @@ export class ZarrArray {
    * @param cacheAttrs If true (default), user attributes will be cached for attribute read operations.
    * If false, user attributes are reloaded from the store prior to all attribute read operations.
    */
-  private constructor(store: Store, path: null | string = null, metadata: ZarrArrayMetadata, readOnly: boolean = false, chunkStore: Store | null = null, cacheMetadata = true, cacheAttrs = true) {
+  private constructor(
+    store: Store,
+    path: null | string = null,
+    metadata: ZarrArrayMetadata,
+    readOnly: boolean = false,
+    chunkStore: Store | null = null,
+    cacheMetadata = true,
+    cacheAttrs = true
+  ) {
     // N.B., expect at this point store is fully initialized with all
     // configuration metadata fully specified and normalized
 
@@ -215,7 +234,6 @@ export class ZarrArray {
     } else {
       this.compressor = null;
     }
-
 
     const attrKey = this.keyPrefix + ATTRS_META_KEY;
     this.attrs = new Attributes<UserAttributes>(this.store, attrKey, this.readOnly, cacheAttrs);
@@ -237,15 +255,23 @@ export class ZarrArray {
     }
   }
 
-  public get(selection?: undefined | Slice | ":" | "..." | null | (Slice | null | ":" | "...")[]): Promise<NestedArray<TypedArray>>;
+  public get(
+    selection?: undefined | Slice | ":" | "..." | null | (Slice | null | ":" | "...")[]
+  ): Promise<NestedArray<TypedArray>>;
   public get(selection?: ArraySelection): Promise<NestedArray<TypedArray> | number>;
   public get(selection: ArraySelection = null): Promise<NestedArray<TypedArray> | number> {
     return this.getBasicSelection(selection);
   }
 
-  public async getBasicSelection(selection: Slice | ":" | "..." | null | (Slice | null | ":" | "...")[]): Promise<NestedArray<TypedArray>>;
-  public async getBasicSelection(selection: ArraySelection): Promise<NestedArray<TypedArray> | number>;
-  public async getBasicSelection(selection: ArraySelection): Promise<number | NestedArray<TypedArray>> {
+  public async getBasicSelection(
+    selection: Slice | ":" | "..." | null | (Slice | null | ":" | "...")[]
+  ): Promise<NestedArray<TypedArray>>;
+  public async getBasicSelection(
+    selection: ArraySelection
+  ): Promise<NestedArray<TypedArray> | number>;
+  public async getBasicSelection(
+    selection: ArraySelection
+  ): Promise<number | NestedArray<TypedArray>> {
     // Refresh metadata
     if (!this.cacheMetadata) {
       await this.reloadMetadata();
@@ -285,7 +311,13 @@ export class ZarrArray {
     }
 
     for (let proj of indexer.iter()) {
-      await this.chunkGetItem(proj.chunkCoords, proj.chunkSelection, out, proj.outSelection, indexer.dropAxes);
+      await this.chunkGetItem(
+        proj.chunkCoords,
+        proj.chunkSelection,
+        out,
+        proj.outSelection,
+        indexer.dropAxes
+      );
     }
 
     // Return scalar instead of zero-dimensional array.
@@ -304,16 +336,28 @@ export class ZarrArray {
    * @param outSelection Location of region within output array to store results in.
    * @param dropAxes Axes to squeeze out of the chunk.
    */
-  private async chunkGetItem<T extends TypedArray>(chunkCoords: number[], chunkSelection: DimensionSelection[], out: NestedArray<T>, outSelection: DimensionSelection[], dropAxes: null | number[]) {
+  private async chunkGetItem<T extends TypedArray>(
+    chunkCoords: number[],
+    chunkSelection: DimensionSelection[],
+    out: NestedArray<T>,
+    outSelection: DimensionSelection[],
+    dropAxes: null | number[]
+  ) {
     if (chunkCoords.length !== this._chunkDataShape.length) {
-      throw new ValueError(`Inconsistent shapes: chunkCoordsLength: ${chunkCoords.length}, cDataShapeLength: ${this.chunkDataShape.length}`);
+      throw new ValueError(
+        `Inconsistent shapes: chunkCoordsLength: ${chunkCoords.length}, cDataShapeLength: ${this.chunkDataShape.length}`
+      );
     }
 
     const cKey = this.chunkKey(chunkCoords);
     // TODO may be better to ask for forgiveness instead
     if (await this.chunkStore.containsItem(cKey)) {
       const cdata = this.chunkStore.getItem(cKey);
-      if (isContiguousSelection(outSelection) && isTotalSlice(chunkSelection, this.chunks) && !this.meta.filters) {
+      if (
+        isContiguousSelection(outSelection) &&
+        isTotalSlice(chunkSelection, this.chunks) &&
+        !this.meta.filters
+      ) {
         // Optimization: we want the whole chunk, and the destination is
         // contiguous, so we can decompress directly from the chunk
         // into the destination array
@@ -330,10 +374,10 @@ export class ZarrArray {
       if (dropAxes !== null) {
         throw new Error("Drop axes is not supported yet");
       }
-      
-      out.set(outSelection, tmp as NestedArray<T>);
 
-    } else { // Chunk isn't there, use fill value
+      out.set(outSelection, tmp as NestedArray<T>);
+    } else {
+      // Chunk isn't there, use fill value
       if (this.fillValue !== null) {
         out.set(outSelection, this.fillValue);
       }
@@ -368,7 +412,7 @@ export class ZarrArray {
       return this.compressor.decode(byteChunkData as any);
     }
 
-    // TODO filtering etc 
+    // TODO filtering etc
     return byteChunkData.buffer;
   }
 
@@ -418,7 +462,9 @@ export class ZarrArray {
     } else if (value instanceof NestedArray) {
       // TODO: non stringify equality check
       if (!arrayEquals1D(value.shape, selectionShape)) {
-        throw new ValueError(`Shape mismatch in source NestedArray and set selection: ${value.shape} and ${selectionShape}`);
+        throw new ValueError(
+          `Shape mismatch in source NestedArray and set selection: ${value.shape} and ${selectionShape}`
+        );
       }
     } else {
       // TODO support TypedArrays, buffers, etc
@@ -445,7 +491,11 @@ export class ZarrArray {
     }
   }
 
-  private async chunkSetItem<T extends TypedArray>(chunkCoords: number[], chunkSelection: DimensionSelection[], value: number | NestedArray<TypedArray>) {
+  private async chunkSetItem<T extends TypedArray>(
+    chunkCoords: number[],
+    chunkSelection: DimensionSelection[],
+    value: number | NestedArray<TypedArray>
+  ) {
     // Obtain key for chunk storage
     const chunkKey = this.chunkKey(chunkCoords);
 
@@ -468,7 +518,6 @@ export class ZarrArray {
         chunk = value.flatten();
       }
     } else {
-
       // partially replace the contents of this chunk
 
       // Existing chunk data
@@ -485,18 +534,13 @@ export class ZarrArray {
           if (this.fillValue !== null) {
             chunkData.fill(this.fillValue);
           }
-        }
-        else {
+        } else {
           // Different type of error - rethrow
           throw error;
         }
       }
 
-      const chunkNestedArray = new NestedArray(
-        chunkData,
-        this.chunks,
-        this.dtype,
-      );
+      const chunkNestedArray = new NestedArray(chunkData, this.chunks, this.dtype);
       chunkNestedArray.set(chunkSelection, value);
       chunk = chunkNestedArray.flatten();
     }
@@ -505,7 +549,6 @@ export class ZarrArray {
   }
 
   private encodeChunk(chunk: TypedArray) {
-    
     if (this.compressor !== null) {
       return this.compressor.encode(new Uint8Array(chunk.buffer));
     }

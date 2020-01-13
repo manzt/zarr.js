@@ -8,37 +8,59 @@ export const ZarrMetadataType = t.union("ZarrArrayMetadata", "ZarrGroupMetadata"
 
 export const UserAttributes = t.name("object");
 
-export const FillType = t.union("number", t.lit("NaN"), t.lit("Infinity"), t.lit("-Infinity"), "null");
+export const FillType = t.union(
+  "number",
+  t.lit("NaN"),
+  t.lit("Infinity"),
+  t.lit("-Infinity"),
+  "null"
+);
 
 export const Order = t.union(t.lit("C"), t.lit("F"));
 
-export const DtypeString = t.union(t.lit("<u1"), t.lit("<i1"), t.lit("<i4"), t.lit("<f4"), t.lit("<f8"), t.lit("<b"), t.lit("<B"));
+export const DtypeString = t.union(
+  t.lit("<u1"),
+  t.lit("<i1"),
+  t.lit("<i4"),
+  t.lit("<f4"),
+  t.lit("<f8"),
+  t.lit("<b"),
+  t.lit("<B")
+);
 
-export const ChunksArgument = t.union("number", t.array(t.union("number", "null")), "boolean", "null");
+export const ChunksArgument = t.union(
+  "number",
+  t.array(t.union("number", "null")),
+  "boolean",
+  "null"
+);
 
 export const Compressor = t.iface([], {
-  "id": "string",
+  id: "string"
 });
 
 export const Filter = t.iface([], {
-  "id": "string",
+  id: "string"
 });
 
 export const ZarrArrayMetadata = t.iface([], {
-  "zarr_format": t.union(t.lit(1), t.lit(2)),
-  "shape": t.array("number"),
-  "chunks": t.array("number"),
-  "dtype": "DtypeString",
-  "compressor": t.union("null", t.iface([], {
-    "id": "string",
-  })),
-  "fill_value": "FillType",
-  "order": "Order",
-  "filters": t.union("null", t.array("Filter")),
+  zarr_format: t.union(t.lit(1), t.lit(2)),
+  shape: t.array("number"),
+  chunks: t.array("number"),
+  dtype: "DtypeString",
+  compressor: t.union(
+    "null",
+    t.iface([], {
+      id: "string"
+    })
+  ),
+  fill_value: "FillType",
+  order: "Order",
+  filters: t.union("null", t.array("Filter"))
 });
 
 export const ZarrGroupMetadata = t.iface([], {
-  "zarr_format": t.union(t.lit(1), t.lit(2)),
+  zarr_format: t.union(t.lit(1), t.lit(2))
 });
 
 const exportedTypeSuite: t.ITypeSuite = {
@@ -51,6 +73,6 @@ const exportedTypeSuite: t.ITypeSuite = {
   Compressor,
   Filter,
   ZarrArrayMetadata,
-  ZarrGroupMetadata,
+  ZarrGroupMetadata
 };
 export default exportedTypeSuite;
