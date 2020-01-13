@@ -19,7 +19,7 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "lint": "tslint --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
     "prebuild": "rimraf dist",
     "build": "tsc && rollup -c rollup.config.ts",
     "start": "rollup -c rollup.config.ts -w",
@@ -37,10 +37,6 @@
       "prettier --write",
       "git add"
     ]
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
   },
   "devDependencies": {
     "@types/express": "^4.17.2",

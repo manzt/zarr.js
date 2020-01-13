@@ -3,10 +3,11 @@
     "semicolon": [
       true,
       "always"
-    ]
+    ],
+    "prettier": true
   },
   "extends": [
-    "tslint-config-standard",
+    "tslint-plugin-prettier",
     "tslint-config-prettier"
   ]
 }
