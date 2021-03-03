@@ -1,6 +1,5 @@
 ![Zarr.js Logo](docs/logo.png)
 
-[![Build Status](https://travis-ci.org/gzuidhof/zarr.js.svg?branch=master)](https://travis-ci.org/gzuidhof/zarr.js)
 ![Top Language Badge](https://img.shields.io/github/languages/top/gzuidhof/zarr.js)
 [![NPM badge](https://img.shields.io/npm/v/zarr)](https://www.npmjs.com/package/zarr)
 [![Documentation](https://img.shields.io/badge/Read%20the-documentation-1abc9c.svg)](http://guido.io/zarr.js)
